@@ -58,7 +58,8 @@ def create_requirement(req: RequirementCreate, db: Session = Depends(get_db)):
 @app.get("/requirements", response_model=List[RequirementResponse])
 def get_requirements(db: Session = Depends(get_db)):
     """Get all requirements"""
-    return db.query(Requirement).order_by(Requirement.created_at.desc()).all()
+    latest_req = db.query(Requirement).order_by(Requirement.created_at.desc()).first()
+    return [latest_req] if latest_req else []
 
 @app.get("/requirements/{requirement_id}", response_model=RequirementResponse)
 def get_requirement(requirement_id: int, db: Session = Depends(get_db)):

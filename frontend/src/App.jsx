@@ -4,22 +4,53 @@ const API_URL = 'http://localhost:8000'
 
 function App() {
     const [requirements, setRequirements] = useState([])
-    const [formData, setFormData] = useState({
-        attribute: '',
-        description: '',
-        domain: '',
-        source_system: '',
-        source_entity: '',
-        responsible_analyst: ''
-    })
+
+    const FIELDS = [
+        { id: 'target_field_name', label: 'Target Field Name' },
+        { id: 'description', label: 'Description', type: 'textarea' },
+        { id: 'target_datamart', label: 'Target Datamart' },
+        { id: 'target_field_type', label: 'Target Field Type' },
+        { id: 'primary_key', label: 'Primary Key (Y/N)' },
+        { id: 'business_key', label: 'Business Key (Y/N)' },
+        { id: 'nullable', label: 'Nullable (Y/N)' },
+        { id: 'default_value', label: 'Default Value' },
+        { id: 'source_field', label: 'Source Field' },
+        { id: 'source_object_event', label: 'Source Object / Event' },
+        { id: 'source_system_topic', label: 'Source System / Topic' },
+        { id: 'source_type', label: 'Source Type (Primary/Secondary)' },
+        { id: 'transformation_rules', label: 'Transformation Rules', type: 'textarea' },
+        { id: 'is_derived_value', label: 'Is Derived Value (Y/N)' },
+        { id: 'derived_value_logic', label: 'Derived Value Logic', type: 'textarea' },
+        { id: 'data_quality_rules', label: 'Data Quality Rules', type: 'textarea' },
+        { id: 'foreign_key_reference_table', label: 'Foreign Key Reference Table' },
+        { id: 'foreign_key_reference_field', label: 'Foreign Key Reference Field' },
+        { id: 'pii_flag', label: 'PII Flag (Y/N)' },
+        { id: 'sensitivity_level', label: 'Sensitivity Level' },
+        { id: 'security_rule', label: 'Security Rule (mask/hash)' },
+        { id: 'retention_policy', label: 'Retention Policy' },
+        { id: 'archiving_policy', label: 'Archiving Policy' },
+        { id: 'source_retention', label: 'Source Retention' },
+        { id: 'source_archiving_policy', label: 'Source Archiving Policy' },
+        { id: 'data_owner', label: 'Data Owner' },
+        { id: 'data_steward', label: 'Data Steward' },
+        { id: 'comment_notes', label: 'Comment / Notes', type: 'textarea' },
+        { id: 'storage', label: 'Storage (format, partitioning)' },
+        { id: 'latency_requirements', label: 'Latency Requirements' },
+        { id: 'is_renamed', label: 'Is Renamed' },
+        { id: 'sla_datamart_level', label: 'SLA - DataMart level' },
+        { id: 'archiving_datamart_level', label: 'Archiving - DataMart level' },
+        { id: 'retention_datamart_level', label: 'Retention - DataMart level' }
+    ]
+
+    const initialFormData = FIELDS.reduce((acc, field) => ({ ...acc, [field.id]: '' }), {})
+    const [formData, setFormData] = useState(initialFormData)
+
     const [loading, setLoading] = useState(false)
     const [success, setSuccess] = useState(false)
     const [theme, setTheme] = useState(() => {
         const savedTheme = localStorage.getItem('theme')
         return savedTheme || 'dark'
     })
-
-    const domains = ['Analytics', 'Reporting', 'ETL', 'Visualization', 'Data Quality', 'Other']
 
     useEffect(() => {
         fetchRequirements()
@@ -56,7 +87,7 @@ function App() {
             })
 
             if (res.ok) {
-                setFormData({ attribute: '', description: '', domain: '', source_system: '', source_entity: '', responsible_analyst: '' })
+                setFormData(initialFormData)
                 setSuccess(true)
                 setTimeout(() => setSuccess(false), 3000)
                 fetchRequirements()
@@ -68,8 +99,13 @@ function App() {
         }
     }
 
+    const [expandedReqId, setExpandedReqId] = useState(null)
+
+    const toggleExpand = (id) => {
+        setExpandedReqId(expandedReqId === id ? null : id)
+    }
+
     const handleDelete = (id) => {
-        // Only remove from UI, not from database
         setRequirements(requirements.filter(req => req.id !== id))
     }
 
@@ -120,84 +156,29 @@ function App() {
                         )}
 
                         <form onSubmit={handleSubmit}>
-                            <div className="form-group">
-                                <label htmlFor="attribute">Attribute</label>
-                                <input
-                                    type="text"
-                                    id="attribute"
-                                    name="attribute"
-                                    value={formData.attribute}
-                                    onChange={handleChange}
-                                    placeholder="e.g., customer_id, loan_type"
-                                    required
-                                />
-                            </div>
-
-                            <div className="form-group">
-                                <label htmlFor="description">Description</label>
-                                <textarea
-                                    id="description"
-                                    name="description"
-                                    value={formData.description}
-                                    onChange={handleChange}
-                                    placeholder="Attribute description"
-                                    required
-                                />
-                            </div>
-
-                            <div className="form-group">
-                                <label htmlFor="domain">Domain</label>
-                                <input
-                                    type="text"
-                                    id="domain"
-                                    name="domain"
-                                    value={formData.domain}
-                                    onChange={handleChange}
-                                    placeholder="e.g., onboarding, collection, telesales"
-                                    required
-                                />
-                            </div>
-
-                            <div className="form-group">
-                                <label htmlFor="source_system">Source System</label>
-                                <input
-                                    type="text"
-                                    id="source_system"
-                                    name="source_system"
-                                    value={formData.source_system}
-                                    onChange={handleChange}
-                                    placeholder="e.g., crm, iabs"
-                                    required
-                                />
-                            </div>
-
-                            <div className="form-group">
-                                <label htmlFor="source_entity">Source Entity</label>
-                                <input
-                                    type="text"
-                                    id="source_entity"
-                                    name="source_entity"
-                                    value={formData.source_entity}
-                                    onChange={handleChange}
-                                    placeholder="e.g., customers, loans"
-                                    required
-                                />
-                            </div>
-
-
-
-                            <div className="form-group">
-                                <label htmlFor="responsible_analyst">Responsible Person</label>
-                                <input
-                                    type="text"
-                                    id="responsible_analyst"
-                                    name="responsible_analyst"
-                                    value={formData.responsible_analyst}
-                                    onChange={handleChange}
-                                    placeholder="e.g., John Doe"
-                                    required
-                                />
-                            </div>
+                            {FIELDS.map(field => (
+                                <div className="form-group" key={field.id}>
+                                    <label htmlFor={field.id}>{field.label}</label>
+                                    {field.type === 'textarea' ? (
+                                        <textarea
+                                            id={field.id}
+                                            name={field.id}
+                                            value={formData[field.id]}
+                                            onChange={handleChange}
+                                            placeholder={field.label}
+                                        />
+                                    ) : (
+                                        <input
+                                            type="text"
+                                            id={field.id}
+                                            name={field.id}
+                                            value={formData[field.id]}
+                                            onChange={handleChange}
+                                            placeholder={field.label}
+                                        />
+                                    )}
+                                </div>
+                            ))}
 
                             <button type="submit" disabled={loading}>
                                 {loading ? 'Submitting...' : 'Submit Requirement'}
@@ -208,17 +189,35 @@ function App() {
 
                 <div className="list-section">
                     <div className="requirements-list">
-                        <h2 className="requirements-header">
-                            Submitted Requirements ({requirements.length})
-                        </h2>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                            <h2 className="requirements-header" style={{ marginBottom: 0 }}>
+                                Submitted Requirements ({requirements.length})
+                            </h2>
+                            {requirements.length > 0 && (
+                                <button
+                                    className="delete-btn"
+                                    onClick={() => setRequirements([])}
+                                    style={{ padding: '0.5rem 1rem' }}
+                                >
+                                    Delete All
+                                </button>
+                            )}
+                        </div>
 
                         {requirements.length === 0 ? (
                             <div className="empty-state">No requirements submitted yet</div>
                         ) : (
                             requirements.map(req => (
-                                <div key={req.id} className="requirement-item">
+                                <div
+                                    key={req.id}
+                                    className="requirement-item"
+                                    onClick={() => toggleExpand(req.id)}
+                                    style={{ cursor: 'pointer' }}
+                                >
                                     <div className="requirement-header">
-                                        <div className="requirement-attribute">{req.attribute}</div>
+                                        <div className="requirement-attribute" title="Target Attribute">
+                                            {req.target_field_name || 'Untitled Field'}
+                                        </div>
                                         <div className="requirement-datetime">
                                             {new Date(req.created_at).toLocaleString('en-US', {
                                                 year: 'numeric',
@@ -229,25 +228,53 @@ function App() {
                                             })}
                                         </div>
                                     </div>
-                                    <div className="requirement-description">{req.description}</div>
-                                    <div className="requirement-meta">
+
+                                    <div className="requirement-meta" style={{ marginTop: '0.5rem' }}>
                                         <div className="meta-info">
-                                            <span className="domain-badge">{req.domain}</span>
-                                            <span className="analyst-badge">
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                                                    <circle cx="12" cy="7" r="4"></circle>
-                                                </svg>
-                                                {req.responsible_analyst}
-                                            </span>
+                                            {req.target_datamart && (
+                                                <span className="domain-badge" title="Target Datamart">
+                                                    Data Mart : {req.target_datamart}
+                                                </span>
+                                            )}
+                                            {req.data_owner && (
+                                                <span className="domain-badge" title="Data Owner">
+                                                    Data Owner : {req.data_owner}
+                                                </span>
+                                            )}
+                                            {req.data_steward && (
+                                                <span className="domain-badge" title="Data Steward">
+                                                    Data Steward : {req.data_steward}
+                                                </span>
+                                            )}
                                         </div>
                                         <button
                                             className="delete-btn"
-                                            onClick={() => handleDelete(req.id)}
+                                            onClick={(e) => {
+                                                e.stopPropagation()
+                                                handleDelete(req.id)
+                                            }}
                                         >
                                             Delete
                                         </button>
                                     </div>
+
+                                    {expandedReqId === req.id && (
+                                        <div className="requirement-details" style={{ marginTop: '1.5rem', borderTop: '1px solid var(--border-color)', paddingTop: '1rem' }}>
+                                            <h4 style={{ marginBottom: '1rem', color: 'var(--text-primary)' }}>Full Requirement Details</h4>
+                                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))', gap: '1rem' }}>
+                                                {FIELDS.map(field => {
+                                                    const value = req[field.id]
+                                                    if (!value) return null
+                                                    return (
+                                                        <div key={field.id} style={{ marginBottom: '0.5rem' }}>
+                                                            <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', fontWeight: 600 }}>{field.label}</div>
+                                                            <div style={{ color: 'var(--text-primary)', wordBreak: 'break-word' }}>{value}</div>
+                                                        </div>
+                                                    )
+                                                })}
+                                            </div>
+                                        </div>
+                                    )}
                                 </div>
                             ))
                         )}

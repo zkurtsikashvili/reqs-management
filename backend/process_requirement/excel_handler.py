@@ -10,7 +10,16 @@ from openpyxl.styles import Font, Alignment, PatternFill, Border, Side
 DATA_DIR = Path(__file__).parent.parent / "data"
 EXCEL_FILE_PATH = DATA_DIR / "requirements_data.xlsx"
 
-COLUMNS = ["attribute", "description", "domain", "source_system", "source_entity", "responsible_analyst"]
+COLUMNS = [
+    "target_field_name", "description", "target_datamart", "target_field_type", "primary_key",
+    "business_key", "nullable", "default_value", "source_field", "source_object_event",
+    "source_system_topic", "source_type", "transformation_rules", "is_derived_value",
+    "derived_value_logic", "data_quality_rules", "foreign_key_reference_table",
+    "foreign_key_reference_field", "pii_flag", "sensitivity_level", "security_rule",
+    "retention_policy", "archiving_policy", "source_retention", "source_archiving_policy",
+    "data_owner", "data_steward", "comment_notes", "storage", "latency_requirements",
+    "is_renamed", "sla_datamart_level", "archiving_datamart_level", "retention_datamart_level"
+]
 
 
 def append_requirement_to_excel(requirement: Dict[str, Any]) -> bool:

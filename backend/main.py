@@ -35,33 +35,21 @@ def create_requirement(req: RequirementCreate, db: Session = Depends(get_db)):
     """Create a new requirement and insert into Excel"""
     from process_requirement.processor import insert_to_excel
     
-    db_requirement = Requirement(
-        attribute=req.attribute,
-        description=req.description,
-        domain=req.domain,
-        source_system=req.source_system,
-        source_entity=req.source_entity,
-        responsible_analyst=req.responsible_analyst
-    )
+    # Create DB model instance using unpacked dictionary
+    req_data = req.dict(exclude_unset=True)
+    db_requirement = Requirement(**req_data)
+    
     db.add(db_requirement)
     db.commit()
     db.refresh(db_requirement)
     
     # Insert into Excel
-    req_dict = {
-        "attribute": db_requirement.attribute,
-        "description": db_requirement.description,
-        "domain": db_requirement.domain,
-        "source_system": db_requirement.source_system,
-        "source_entity": db_requirement.source_entity,
-        "responsible_analyst": db_requirement.responsible_analyst
-    }
-    excel_result = insert_to_excel(req_dict)
+    excel_result = insert_to_excel(req_data)
     
     return {
         "requirement": {
             "id": db_requirement.id,
-            **req_dict,
+            **req_data,
             "created_at": db_requirement.created_at.isoformat()
         },
         "excel_processing": excel_result

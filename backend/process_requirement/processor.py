@@ -11,6 +11,6 @@ def insert_to_excel(requirement: Dict[str, Any]) -> Dict[str, Any]:
     success = append_requirement_to_excel(requirement)
     
     if success:
-        return {"status": "inserted", "message": f"'{requirement.get('attribute')}' added to Excel"}
+        return {"status": "inserted", "message": f"'{requirement.get('target_field_name')}' added to Excel"}
     else:
         return {"status": "error", "message": "Failed to insert into Excel"}

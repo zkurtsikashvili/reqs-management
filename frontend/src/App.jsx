@@ -4,6 +4,8 @@ const API_URL = 'http://localhost:8000'
 
 function App() {
     const [requirements, setRequirements] = useState([])
+    const [stewardFilter, setStewardFilter] = useState('')
+    const [datamartFilter, setDatamartFilter] = useState('')
 
     const FIELDS = [
         { id: 'target_field_name', label: 'Target Field Name' },
@@ -114,6 +116,21 @@ function App() {
         setFormData({ ...formData, [e.target.name]: e.target.value })
     }
 
+    const filteredRequirements = (() => {
+        if (!stewardFilter && !datamartFilter) {
+            return requirements.length > 0 ? [requirements[0]] : []
+        }
+        return requirements.filter(req => {
+            const steward = req.data_steward?.toLowerCase() || ''
+            const datamart = req.target_datamart?.toLowerCase() || ''
+
+            const matchSteward = !stewardFilter || steward.includes(stewardFilter.toLowerCase())
+            const matchDatamart = !datamartFilter || datamart.includes(datamartFilter.toLowerCase())
+
+            return matchSteward && matchDatamart
+        })
+    })()
+
     return (
         <div className="container">
             <div className="header-row">
@@ -193,26 +210,58 @@ function App() {
 
                 <div className="list-section">
                     <div className="requirements-list">
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-                            <div style={{ display: 'flex', alignItems: 'center' }}>
-                                <h2 className="requirements-header" style={{ marginBottom: 0 }}>
-                                    Latest Submission
-                                </h2>
-                            </div>{requirements.length > 0 && (
-                                <button
-                                    className="delete-btn"
-                                    onClick={() => setRequirements([])}
-                                    style={{ padding: '0.5rem 1rem' }}
-                                >
-                                    Delete All
-                                </button>
+                        <div style={{ marginBottom: '1rem' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                                <div style={{ display: 'flex', alignItems: 'center' }}>
+                                    <h2 className="requirements-header" style={{ marginBottom: 0, borderBottom: 'none', paddingBottom: 0 }}>
+                                        {(stewardFilter || datamartFilter) ? 'Filtered Results' : 'Latest Submission'}
+                                    </h2>
+                                </div>
+                                {requirements.length > 0 && (
+                                    <button
+                                        className="delete-btn"
+                                        onClick={() => setRequirements([])}
+                                        style={{ padding: '0.5rem 1rem' }}
+                                    >
+                                        Delete All
+                                    </button>
+                                )}
+                            </div>
+
+                            {requirements.length > 0 && (
+                                <div style={{ marginBottom: '1rem', display: 'flex', gap: '10px' }}>
+                                    <input
+                                        type="text"
+                                        placeholder="Filter by Data Steward..."
+                                        value={stewardFilter}
+                                        onChange={(e) => setStewardFilter(e.target.value)}
+                                        style={{
+                                            flex: 1,
+                                            padding: '12px 16px',
+                                            fontSize: '14px'
+                                        }}
+                                    />
+                                    <input
+                                        type="text"
+                                        placeholder="Filter by Data Mart..."
+                                        value={datamartFilter}
+                                        onChange={(e) => setDatamartFilter(e.target.value)}
+                                        style={{
+                                            flex: 1,
+                                            padding: '12px 16px',
+                                            fontSize: '14px'
+                                        }}
+                                    />
+                                </div>
                             )}
                         </div>
 
-                        {requirements.length === 0 ? (
-                            <div className="empty-state">No requirements submitted yet</div>
+                        {filteredRequirements.length === 0 ? (
+                            <div className="empty-state">
+                                {(stewardFilter || datamartFilter) ? 'No matching requirements found' : 'No requirements submitted yet'}
+                            </div>
                         ) : (
-                            requirements.map(req => (
+                            filteredRequirements.map(req => (
                                 <div
                                     key={req.id}
                                     className="requirement-item"

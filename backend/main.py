@@ -1,7 +1,7 @@
 from fastapi import FastAPI, HTTPException, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
-from typing import List
+from typing import List, Optional
 
 from database import engine, get_db, Base
 from models import Requirement
@@ -56,10 +56,14 @@ def create_requirement(req: RequirementCreate, db: Session = Depends(get_db)):
     }
 
 @app.get("/requirements", response_model=List[RequirementResponse])
-def get_requirements(db: Session = Depends(get_db)):
-    """Get all requirements"""
-    latest_req = db.query(Requirement).order_by(Requirement.created_at.desc()).first()
-    return [latest_req] if latest_req else []
+def get_requirements(data_steward: str = None, db: Session = Depends(get_db)):
+    """Get requirements, optionally filtered by data steward"""
+    query = db.query(Requirement)
+    
+    if data_steward:
+        query = query.filter(Requirement.data_steward.ilike(f"%{data_steward}%"))
+        
+    return query.order_by(Requirement.created_at.desc()).all()
 
 @app.get("/requirements/{requirement_id}", response_model=RequirementResponse)
 def get_requirement(requirement_id: int, db: Session = Depends(get_db)):

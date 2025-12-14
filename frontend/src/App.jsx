@@ -8,10 +8,10 @@ function App() {
     const [datamartFilter, setDatamartFilter] = useState('')
 
     const FIELDS = [
-        { id: 'target_field_name', label: 'Target Field Name' },
-        { id: 'description', label: 'Description', type: 'textarea' },
+        { id: 'target_field_name', label: 'Final field name in the target model(ODS/DWD/DWS/MART)' },
+        { id: 'description', label: 'Business definition in plain English (what the field represents)', type: 'textarea' },
         { id: 'target_datamart', label: 'Target Datamart' },
-        { id: 'target_field_type', label: 'Target Field Type' },
+        { id: 'target_field_type', label: 'Data type in target layer' },
         { id: 'primary_key', label: 'Primary Key (Y/N)' },
         { id: 'business_key', label: 'Business Key (Y/N)' },
         { id: 'nullable', label: 'Nullable (Y/N)' },

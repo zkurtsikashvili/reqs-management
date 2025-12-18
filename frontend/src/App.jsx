@@ -6,6 +6,7 @@ function App() {
     const [requirements, setRequirements] = useState([])
     const [stewardFilter, setStewardFilter] = useState('')
     const [datamartFilter, setDatamartFilter] = useState('')
+    const [targetFieldFilter, setTargetFieldFilter] = useState('')
 
     const FIELDS = [
         { id: 'target_field_name', label: 'Final field name in the target model(ODS/DWD/DWS/MART)' },
@@ -161,17 +162,19 @@ function App() {
     }
 
     const filteredRequirements = (() => {
-        if (!stewardFilter && !datamartFilter && !showAll) {
+        if (!stewardFilter && !datamartFilter && !targetFieldFilter && !showAll) {
             return requirements.length > 0 ? [requirements[0]] : []
         }
         return requirements.filter(req => {
             const steward = req.data_steward?.toLowerCase() || ''
             const datamart = req.target_datamart?.toLowerCase() || ''
+            const targetField = req.target_field_name?.toLowerCase() || ''
 
             const matchSteward = !stewardFilter || steward.includes(stewardFilter.toLowerCase())
             const matchDatamart = !datamartFilter || datamart.includes(datamartFilter.toLowerCase())
+            const matchTargetField = !targetFieldFilter || targetField.includes(targetFieldFilter.toLowerCase())
 
-            return matchSteward && matchDatamart
+            return matchSteward && matchDatamart && matchTargetField
         })
     })()
 
@@ -291,6 +294,17 @@ function App() {
                                 <div style={{ marginBottom: '1rem', display: 'flex', gap: '10px' }}>
                                     <input
                                         type="text"
+                                        placeholder="Filter by Field Name..."
+                                        value={targetFieldFilter}
+                                        onChange={(e) => setTargetFieldFilter(e.target.value)}
+                                        style={{
+                                            flex: 1,
+                                            padding: '12px 16px',
+                                            fontSize: '14px'
+                                        }}
+                                    />
+                                    <input
+                                        type="text"
                                         placeholder="Filter by Data Steward..."
                                         value={stewardFilter}
                                         onChange={(e) => setStewardFilter(e.target.value)}
@@ -317,7 +331,7 @@ function App() {
 
                         {filteredRequirements.length === 0 ? (
                             <div className="empty-state">
-                                {(stewardFilter || datamartFilter) ? 'No matching requirements found' : 'No requirements submitted yet'}
+                                {(stewardFilter || datamartFilter || targetFieldFilter) ? 'No matching requirements found' : 'No requirements submitted yet'}
                             </div>
                         ) : (
                             filteredRequirements.map(req => (

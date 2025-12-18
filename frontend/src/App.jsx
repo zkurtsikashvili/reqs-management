@@ -49,6 +49,8 @@ function App() {
 
     const [loading, setLoading] = useState(false)
     const [success, setSuccess] = useState(false)
+    const [editingId, setEditingId] = useState(null)
+    const [showAll, setShowAll] = useState(false)
     const [theme, setTheme] = useState(() => {
         const savedTheme = localStorage.getItem('theme')
         return savedTheme || 'dark'
@@ -83,14 +85,18 @@ function App() {
         setLoading(true)
 
         try {
-            const res = await fetch(`${API_URL}/requirements`, {
-                method: 'POST',
+            const method = editingId ? 'PUT' : 'POST'
+            const url = editingId ? `${API_URL}/requirements/${editingId}` : `${API_URL}/requirements`
+
+            const res = await fetch(url, {
+                method: method,
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(formData)
             })
 
             if (res.ok) {
                 setFormData(initialFormData)
+                setEditingId(null)
                 setSuccess(true)
                 setTimeout(() => setSuccess(false), 3000)
                 fetchRequirements()
@@ -112,12 +118,27 @@ function App() {
         setRequirements(requirements.filter(req => req.id !== id))
     }
 
+    const handleEdit = (req) => {
+        const editData = {}
+        FIELDS.forEach(field => {
+            editData[field.id] = req[field.id] || ''
+        })
+        setFormData(editData)
+        setEditingId(req.id)
+        window.scrollTo({ top: 0, behavior: 'smooth' })
+    }
+
+    const handleCancelEdit = () => {
+        setFormData(initialFormData)
+        setEditingId(null)
+    }
+
     const handleChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value })
     }
 
     const filteredRequirements = (() => {
-        if (!stewardFilter && !datamartFilter) {
+        if (!stewardFilter && !datamartFilter && !showAll) {
             return requirements.length > 0 ? [requirements[0]] : []
         }
         return requirements.filter(req => {
@@ -130,6 +151,8 @@ function App() {
             return matchSteward && matchDatamart
         })
     })()
+
+    const toggleShowAll = () => setShowAll(!showAll)
 
     return (
         <div className="container">
@@ -201,9 +224,21 @@ function App() {
                                 </div>
                             ))}
 
-                            <button type="submit" disabled={loading}>
-                                {loading ? 'Submitting...' : 'Submit Requirement'}
-                            </button>
+                            <div style={{ display: 'flex', gap: '1rem' }}>
+                                <button type="submit" disabled={loading} style={{ flex: 1 }}>
+                                    {loading ? (editingId ? 'Updating...' : 'Submitting...') : (editingId ? 'Update Requirement' : 'Submit Requirement')}
+                                </button>
+                                {editingId && (
+                                    <button
+                                        type="button"
+                                        onClick={handleCancelEdit}
+                                        className="delete-btn"
+                                        style={{ flex: 0.3 }}
+                                    >
+                                        Cancel
+                                    </button>
+                                )}
+                            </div>
                         </form>
                     </div>
                 </div>
@@ -214,18 +249,28 @@ function App() {
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
                                 <div style={{ display: 'flex', alignItems: 'center' }}>
                                     <h2 className="requirements-header" style={{ marginBottom: 0, borderBottom: 'none', paddingBottom: 0 }}>
-                                        {(stewardFilter || datamartFilter) ? 'Filtered Results' : 'Latest Submission'}
+                                        {(stewardFilter || datamartFilter || showAll) ? 'Submitted Requirements' : 'Latest Submission'}
                                     </h2>
                                 </div>
-                                {requirements.length > 0 && (
-                                    <button
-                                        className="delete-btn"
-                                        onClick={() => setRequirements([])}
-                                        style={{ padding: '0.5rem 1rem' }}
-                                    >
-                                        Delete All
-                                    </button>
-                                )}
+                                <div style={{ display: 'flex', gap: '0.5rem' }}>
+                                    {requirements.length > 0 && (
+                                        <button
+                                            className="btn-action"
+                                            onClick={toggleShowAll}
+                                        >
+                                            {showAll ? 'Show Latest Only' : 'Show All from DB'}
+                                        </button>
+                                    )}
+                                    {requirements.length > 0 && (
+                                        <button
+                                            className="delete-btn"
+                                            onClick={() => setRequirements([])}
+                                            style={{ padding: '0.5rem 1rem' }}
+                                        >
+                                            Delete All
+                                        </button>
+                                    )}
+                                </div>
                             </div>
 
                             {requirements.length > 0 && (
@@ -301,15 +346,26 @@ function App() {
                                                 </span>
                                             )}
                                         </div>
-                                        <button
-                                            className="delete-btn"
-                                            onClick={(e) => {
-                                                e.stopPropagation()
-                                                handleDelete(req.id)
-                                            }}
-                                        >
-                                            Delete
-                                        </button>
+                                        <div style={{ display: 'flex', gap: '0.5rem' }}>
+                                            <button
+                                                className="btn-action"
+                                                onClick={(e) => {
+                                                    e.stopPropagation()
+                                                    handleEdit(req)
+                                                }}
+                                            >
+                                                Edit
+                                            </button>
+                                            <button
+                                                className="delete-btn"
+                                                onClick={(e) => {
+                                                    e.stopPropagation()
+                                                    handleDelete(req.id)
+                                                }}
+                                            >
+                                                Delete
+                                            </button>
+                                        </div>
                                     </div>
 
                                     {expandedReqId === req.id && (

@@ -39,6 +39,9 @@ class RequirementCreate(BaseModel):
     archiving_datamart_level: Optional[str] = None
     retention_datamart_level: Optional[str] = None
 
+class RequirementUpdate(RequirementCreate):
+    pass
+
 class RequirementResponse(RequirementCreate):
     id: int
     created_at: datetime

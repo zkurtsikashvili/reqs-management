@@ -527,6 +527,53 @@ button[type="submit"]:disabled {
   box-shadow: 0 0 20px rgba(244, 63, 94, 0.15);
 }
 
+/* === ACTION BUTTONS === */
+.btn-action {
+  padding: 8px 16px;
+  font-size: 13px;
+  font-weight: 500;
+  background: var(--bg-glass);
+  color: var(--text-primary);
+  border: 1px solid var(--border-subtle);
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  backdrop-filter: blur(10px);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.btn-action:hover {
+  border-color: var(--accent-violet);
+  background: var(--bg-elevated);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.btn-action:active {
+  transform: translateY(0);
+}
+
+.btn-primary-sm {
+  background: var(--accent-gradient);
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.btn-primary-sm:hover {
+  background: var(--accent-gradient-hover);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px var(--glow-soft);
+}
+
 /* === EMPTY STATE === */
 .empty-state {
   text-align: center;

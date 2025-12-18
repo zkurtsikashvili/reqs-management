@@ -82,3 +82,18 @@ def delete_requirement(requirement_id: int, db: Session = Depends(get_db)):
     db.delete(requirement)
     db.commit()
     return None
+
+@app.put("/requirements/{requirement_id}", response_model=RequirementResponse)
+def update_requirement(requirement_id: int, req: RequirementCreate, db: Session = Depends(get_db)):
+    """Update a requirement by ID"""
+    db_requirement = db.query(Requirement).filter(Requirement.id == requirement_id).first()
+    if not db_requirement:
+        raise HTTPException(status_code=404, detail="Requirement not found")
+    
+    update_data = req.dict(exclude_unset=True)
+    for key, value in update_data.items():
+        setattr(db_requirement, key, value)
+    
+    db.commit()
+    db.refresh(db_requirement)
+    return db_requirement

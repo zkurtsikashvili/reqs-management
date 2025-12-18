@@ -261,15 +261,6 @@ function App() {
                                             {showAll ? 'Show Latest Only' : 'Show All from DB'}
                                         </button>
                                     )}
-                                    {requirements.length > 0 && (
-                                        <button
-                                            className="delete-btn"
-                                            onClick={() => setRequirements([])}
-                                            style={{ padding: '0.5rem 1rem' }}
-                                        >
-                                            Delete All
-                                        </button>
-                                    )}
                                 </div>
                             </div>
 

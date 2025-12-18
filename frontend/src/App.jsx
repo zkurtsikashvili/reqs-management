@@ -7,6 +7,53 @@ function App() {
     const [stewardFilter, setStewardFilter] = useState('')
     const [datamartFilter, setDatamartFilter] = useState('')
     const [targetFieldFilter, setTargetFieldFilter] = useState('')
+    const [selectedTeam, setSelectedTeam] = useState('All') // New state for selected team
+
+    const RESPONSIBLE_TEAMS = [
+        'All', 'Business', 'Tech - DE', 'Tech - DM',
+        'Business, Validation - Tech - DM', 'Data Governance (DG)',
+        'Business / Data Engineering', 'Business + Tech'
+    ]
+
+    const TEAM_FIELDS_MAP = {
+        'All': [
+            'target_field_name', 'description', 'target_datamart', 'target_field_type',
+            'primary_key', 'business_key', 'nullable', 'default_value', 'source_field',
+            'source_object_event', 'source_system_topic', 'source_type', 'transformation_rules',
+            'is_derived_value', 'derived_value_logic', 'data_quality_rules',
+            'foreign_key_reference_table', 'foreign_key_reference_field', 'pii_flag',
+            'sensitivity_level', 'security_rule', 'retention_policy', 'archiving_policy',
+            'source_retention', 'source_archiving_policy', 'data_owner', 'data_steward',
+            'comment_notes', 'storage', 'latency_requirements', 'is_renamed',
+            'sla_datamart_level', 'archiving_datamart_level', 'retention_datamart_level'
+        ],
+        'Business': [
+            'target_field_name', 'description', 'primary_key', 'nullable', 'default_value',
+            'source_field', 'source_object_event', 'source_system_topic', 'is_derived_value',
+            'derived_value_logic', 'pii_flag', 'sensitivity_level', 'security_rule',
+            'retention_policy', 'archiving_policy', 'source_retention', 'source_archiving_policy',
+            'data_owner', 'sla_datamart_level', 'archiving_datamart_level', 'retention_datamart_level'
+        ],
+        'Tech - DE': [
+            'target_datamart', 'target_field_type', 'nullable', 'storage', 'latency_requirements'
+        ],
+        'Tech - DM': [
+            'primary_key', 'business_key', 'default_value', 'transformation_rules',
+            'foreign_key_reference_table', 'foreign_key_reference_field', 'is_renamed'
+        ],
+        'Business, Validation - Tech - DM': [
+            'business_key', 'default_value'
+        ],
+        'Data Governance (DG)': [
+            'data_quality_rules'
+        ],
+        'Business / Data Engineering': [
+            'data_steward'
+        ],
+        'Business + Tech': [
+            'latency_requirements', 'sla_datamart_level'
+        ]
+    }
 
     const FIELDS = [
         { id: 'target_field_name', label: 'Final field name in the target model(ODS/DWD/DWS/MART)' },
@@ -149,6 +196,7 @@ function App() {
         })
         setFormData(editData)
         setEditingId(req.id)
+        setSelectedTeam('All') // Reset selected team to 'All' when editing an existing requirement
         window.scrollTo({ top: 0, behavior: 'smooth' })
     }
 
@@ -226,7 +274,20 @@ function App() {
                         )}
 
                         <form onSubmit={handleSubmit}>
-                            {FIELDS.map(field => (
+                            <div className="form-group">
+                                <label htmlFor="responsibleTeam">Responsible Team</label>
+                                <select
+                                    id="responsibleTeam"
+                                    name="responsibleTeam"
+                                    value={selectedTeam}
+                                    onChange={(e) => setSelectedTeam(e.target.value)}
+                                >
+                                    {RESPONSIBLE_TEAMS.map(team => (
+                                        <option key={team} value={team}>{team}</option>
+                                    ))}
+                                </select>
+                            </div>
+                            {FIELDS.filter(field => selectedTeam === 'All' || TEAM_FIELDS_MAP[selectedTeam]?.includes(field.id)).map(field => (
                                 <div className="form-group" key={field.id}>
                                     <label htmlFor={field.id}>{field.label}</label>
                                     {field.type === 'textarea' ? (
@@ -284,7 +345,7 @@ function App() {
                                             className="btn-action"
                                             onClick={toggleShowAll}
                                         >
-                                            {showAll ? 'Show Latest Only' : 'Show All from DB'}
+                                            {showAll ? 'Show Latest Only' : 'Show All'}
                                         </button>
                                     )}
                                 </div>

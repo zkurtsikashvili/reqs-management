@@ -51,6 +51,7 @@ function App() {
     const [success, setSuccess] = useState(false)
     const [editingId, setEditingId] = useState(null)
     const [showAll, setShowAll] = useState(false)
+    const [deleteModal, setDeleteModal] = useState({ isOpen: false, id: null })
     const [theme, setTheme] = useState(() => {
         const savedTheme = localStorage.getItem('theme')
         return savedTheme || 'dark'
@@ -114,9 +115,31 @@ function App() {
         setExpandedReqId(expandedReqId === id ? null : id)
     }
 
-    const handleDelete = (id) => {
-        setRequirements(requirements.filter(req => req.id !== id))
+    const handleDeleteClick = (e, id) => {
+        e.stopPropagation()
+        setDeleteModal({ isOpen: true, id })
     }
+
+    const confirmDelete = async () => {
+        const id = deleteModal.id
+        try {
+            const res = await fetch(`${API_URL}/requirements/${id}`, {
+                method: 'DELETE'
+            })
+            if (res.ok) {
+                setRequirements(requirements.filter(req => req.id !== id))
+            }
+        } catch (error) {
+            console.error('Failed to delete requirement:', error)
+        } finally {
+            setDeleteModal({ isOpen: false, id: null })
+        }
+    }
+
+    const closeDeleteModal = () => {
+        setDeleteModal({ isOpen: false, id: null })
+    }
+
 
     const handleEdit = (req) => {
         const editData = {}
@@ -349,10 +372,7 @@ function App() {
                                             </button>
                                             <button
                                                 className="delete-btn"
-                                                onClick={(e) => {
-                                                    e.stopPropagation()
-                                                    handleDelete(req.id)
-                                                }}
+                                                onClick={(e) => handleDeleteClick(e, req.id)}
                                             >
                                                 Delete
                                             </button>
@@ -382,6 +402,26 @@ function App() {
                     </div>
                 </div>
             </div>
+            {deleteModal.isOpen && (
+                <div className="modal-overlay" onClick={closeDeleteModal}>
+                    <div className="modal-content" onClick={e => e.stopPropagation()}>
+                        <div className="modal-header">
+                            <div className="modal-title">Delete Requirement</div>
+                        </div>
+                        <div className="modal-body">
+                            Are you sure you want to delete this requirement? This action cannot be undone.
+                        </div>
+                        <div className="modal-footer">
+                            <button className="btn-action" onClick={closeDeleteModal}>
+                                Cancel
+                            </button>
+                            <button className="delete-btn" style={{ background: 'var(--danger)', color: 'white', borderColor: 'var(--danger)' }} onClick={confirmDelete}>
+                                Delete
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     )
 }

@@ -414,6 +414,17 @@ function App() {
                                                 hour: '2-digit',
                                                 minute: '2-digit'
                                             })}
+                                            {req.updated_at && (
+                                                <div style={{ fontSize: '0.8em', color: 'var(--text-secondary)', marginTop: '4px' }}>
+                                                    Updated: {new Date(req.updated_at).toLocaleString('en-US', {
+                                                        year: 'numeric',
+                                                        month: 'short',
+                                                        day: 'numeric',
+                                                        hour: '2-digit',
+                                                        minute: '2-digit'
+                                                    })}
+                                                </div>
+                                            )}
                                         </div>
                                     </div>
 

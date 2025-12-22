@@ -407,7 +407,7 @@ function App() {
                                             {req.target_field_name || 'Untitled Field'}
                                         </div>
                                         <div className="requirement-datetime">
-                                            {new Date(req.created_at).toLocaleString('en-US', {
+                                            Created: {new Date(req.created_at).toLocaleString('en-US', {
                                                 year: 'numeric',
                                                 month: 'short',
                                                 day: 'numeric',
@@ -415,7 +415,7 @@ function App() {
                                                 minute: '2-digit'
                                             })}
                                             {req.updated_at && (
-                                                <div style={{ fontSize: '0.8em', color: 'var(--text-secondary)', marginTop: '4px' }}>
+                                                <div style={{ marginTop: '4px' }}>
                                                     Updated: {new Date(req.updated_at).toLocaleString('en-US', {
                                                         year: 'numeric',
                                                         month: 'short',

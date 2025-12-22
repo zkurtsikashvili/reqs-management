@@ -412,7 +412,8 @@ function App() {
                                                 month: 'short',
                                                 day: 'numeric',
                                                 hour: '2-digit',
-                                                minute: '2-digit'
+                                                minute: '2-digit',
+                                                hour12: false
                                             })}
                                             {req.updated_at && (
                                                 <div style={{ marginTop: '4px' }}>
@@ -421,7 +422,8 @@ function App() {
                                                         month: 'short',
                                                         day: 'numeric',
                                                         hour: '2-digit',
-                                                        minute: '2-digit'
+                                                        minute: '2-digit',
+                                                        hour12: false
                                                     })}
                                                 </div>
                                             )}

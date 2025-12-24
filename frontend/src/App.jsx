@@ -101,6 +101,7 @@ function App() {
     const [success, setSuccess] = useState(false)
     const [editingId, setEditingId] = useState(null)
     const [showAll, setShowAll] = useState(false)
+    const [showIncomplete, setShowIncomplete] = useState(false)
     const [deleteModal, setDeleteModal] = useState({ isOpen: false, id: null })
 
     const [theme, setTheme] = useState(() => {
@@ -214,6 +215,14 @@ function App() {
     }
 
     const filteredRequirements = (() => {
+        // If "Incomplete" is active, filter for items with ANY missing field
+        if (showIncomplete) {
+            return requirements.filter(req => {
+                // Check if any field defined in FIELDS has a missing value in the requirement
+                return FIELDS.some(field => !req[field.id] || req[field.id].toString().trim() === '')
+            })
+        }
+
         if (!stewardFilter && !datamartFilter && !targetFieldFilter && !showAll) {
             return requirements.length > 0 ? [requirements[0]] : []
         }
@@ -230,7 +239,15 @@ function App() {
         })
     })()
 
-    const toggleShowAll = () => setShowAll(!showAll)
+    const toggleShowAll = () => {
+        setShowAll(!showAll)
+        if (showIncomplete) setShowIncomplete(false)
+    }
+
+    const toggleShowIncomplete = () => {
+        setShowIncomplete(!showIncomplete)
+        if (!showIncomplete) setShowAll(false) // Reset simple filters if switching to special mode
+    }
 
     return (
         <div className="container">
@@ -362,17 +379,28 @@ function App() {
                                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
                                     <div style={{ display: 'flex', alignItems: 'center' }}>
                                         <h2 className="requirements-header" style={{ marginBottom: 0, borderBottom: 'none', paddingBottom: 0 }}>
-                                            {(stewardFilter || datamartFilter || showAll) ? 'Submitted Requirements' : 'Latest Submission'}
+                                            {showIncomplete ? 'Incomplete Requirements' : ((stewardFilter || datamartFilter || showAll) ? 'Submitted Requirements' : 'Latest Submission')}
                                         </h2>
                                     </div>
                                     <div style={{ display: 'flex', gap: '0.5rem' }}>
                                         {requirements.length > 0 && (
-                                            <button
-                                                className="btn-action"
-                                                onClick={toggleShowAll}
-                                            >
-                                                {showAll ? 'Show Latest Only' : 'Show All'}
-                                            </button>
+                                            <>
+                                                <button
+                                                    className="btn-action"
+                                                    onClick={toggleShowIncomplete}
+                                                    style={showIncomplete ? { borderColor: 'var(--accent-violet)', background: 'var(--bg-elevated)' } : {}}
+                                                >
+                                                    {showIncomplete ? 'Show All' : 'Incomplete'}
+                                                </button>
+                                                {!showIncomplete && (
+                                                    <button
+                                                        className="btn-action"
+                                                        onClick={toggleShowAll}
+                                                    >
+                                                        {showAll ? 'Show Latest Only' : 'Show All'}
+                                                    </button>
+                                                )}
+                                            </>
                                         )}
                                     </div>
                                 </div>

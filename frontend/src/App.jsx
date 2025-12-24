@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import AnalyticsDashboard from './AnalyticsDashboard'
 
 const API_URL = 'http://localhost:8000'
 
@@ -8,6 +9,7 @@ function App() {
     const [datamartFilter, setDatamartFilter] = useState('')
     const [targetFieldFilter, setTargetFieldFilter] = useState('')
     const [selectedTeam, setSelectedTeam] = useState('All') // New state for selected team
+    const [viewMode, setViewMode] = useState('list') // 'list' or 'analytics'
 
     const RESPONSIBLE_TEAMS = [
         'All', 'Business', 'Tech - DE', 'Tech - DM',
@@ -100,6 +102,7 @@ function App() {
     const [editingId, setEditingId] = useState(null)
     const [showAll, setShowAll] = useState(false)
     const [deleteModal, setDeleteModal] = useState({ isOpen: false, id: null })
+
     const [theme, setTheme] = useState(() => {
         const savedTheme = localStorage.getItem('theme')
         return savedTheme || 'dark'
@@ -197,6 +200,7 @@ function App() {
         setFormData(editData)
         setEditingId(req.id)
         setSelectedTeam('All') // Reset selected team to 'All' when editing an existing requirement
+        setViewMode('list') // Switch back to 'list' view to edit form
         window.scrollTo({ top: 0, behavior: 'smooth' })
     }
 
@@ -236,6 +240,20 @@ function App() {
                     <p className="subtitle">Submit data requirements for analysis</p>
                 </div>
                 <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+                    <div className="view-toggle">
+                        <button
+                            onClick={() => setViewMode('list')}
+                            className={`view-toggle-btn ${viewMode === 'list' ? 'active' : ''}`}
+                        >
+                            List
+                        </button>
+                        <button
+                            onClick={() => setViewMode('analytics')}
+                            className={`view-toggle-btn ${viewMode === 'analytics' ? 'active' : ''}`}
+                        >
+                            Analytics
+                        </button>
+                    </div>
 
                     <button
                         className="theme-toggle"
@@ -267,227 +285,236 @@ function App() {
             </div>
 
             <div className="main-layout">
-                <div className="form-section">
-                    <div className="form-card">
-                        {success && (
-                            <div className="success-message">Requirement submitted successfully!</div>
-                        )}
+                {viewMode === 'list' && (
+                    <div className="form-section">
+                        <div className="form-card">
+                            {success && (
+                                <div className="success-message">Requirement submitted successfully!</div>
+                            )}
 
-                        <form onSubmit={handleSubmit}>
-                            <div className="form-group">
-                                <label htmlFor="responsibleTeam">Responsible Team</label>
-                                <select
-                                    id="responsibleTeam"
-                                    name="responsibleTeam"
-                                    value={selectedTeam}
-                                    onChange={(e) => setSelectedTeam(e.target.value)}
-                                >
-                                    {RESPONSIBLE_TEAMS.map(team => (
-                                        <option key={team} value={team}>{team}</option>
-                                    ))}
-                                </select>
-                            </div>
-                            {FIELDS.filter(field => selectedTeam === 'All' || TEAM_FIELDS_MAP[selectedTeam]?.includes(field.id)).map(field => (
-                                <div className="form-group" key={field.id}>
-                                    <label htmlFor={field.id}>{field.label}</label>
-                                    {field.type === 'textarea' ? (
-                                        <textarea
-                                            id={field.id}
-                                            name={field.id}
-                                            value={formData[field.id]}
-                                            onChange={handleChange}
-                                            placeholder={`${field.description}${field.example ? ` (e.g., ${field.example})` : ''}` || field.label}
-                                        />
-                                    ) : (
-                                        <input
-                                            type="text"
-                                            id={field.id}
-                                            name={field.id}
-                                            value={formData[field.id]}
-                                            onChange={handleChange}
-                                            placeholder={`${field.description}${field.example ? ` (e.g., ${field.example})` : ''}` || field.label}
-                                        />
-                                    )}
-                                </div>
-                            ))}
-
-                            <div style={{ display: 'flex', gap: '1rem' }}>
-                                <button type="submit" disabled={loading} style={{ flex: 1 }}>
-                                    {loading ? (editingId ? 'Updating...' : 'Submitting...') : (editingId ? 'Update Requirement' : 'Submit Requirement')}
-                                </button>
-                                {editingId && (
-                                    <button
-                                        type="button"
-                                        onClick={handleCancelEdit}
-                                        className="delete-btn"
-                                        style={{ flex: 0.3 }}
+                            <form onSubmit={handleSubmit}>
+                                <div className="form-group">
+                                    <label htmlFor="responsibleTeam">Responsible Team</label>
+                                    <select
+                                        id="responsibleTeam"
+                                        name="responsibleTeam"
+                                        value={selectedTeam}
+                                        onChange={(e) => setSelectedTeam(e.target.value)}
                                     >
-                                        Cancel
-                                    </button>
-                                )}
-                            </div>
-                        </form>
-                    </div>
-                </div>
-
-                <div className="list-section">
-                    <div className="requirements-list">
-                        <div style={{ marginBottom: '1rem' }}>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-                                <div style={{ display: 'flex', alignItems: 'center' }}>
-                                    <h2 className="requirements-header" style={{ marginBottom: 0, borderBottom: 'none', paddingBottom: 0 }}>
-                                        {(stewardFilter || datamartFilter || showAll) ? 'Submitted Requirements' : 'Latest Submission'}
-                                    </h2>
+                                        {RESPONSIBLE_TEAMS.map(team => (
+                                            <option key={team} value={team}>{team}</option>
+                                        ))}
+                                    </select>
                                 </div>
-                                <div style={{ display: 'flex', gap: '0.5rem' }}>
-                                    {requirements.length > 0 && (
+                                {FIELDS.filter(field => selectedTeam === 'All' || TEAM_FIELDS_MAP[selectedTeam]?.includes(field.id)).map(field => (
+                                    <div className="form-group" key={field.id}>
+                                        <label htmlFor={field.id}>{field.label}</label>
+                                        {field.type === 'textarea' ? (
+                                            <textarea
+                                                id={field.id}
+                                                name={field.id}
+                                                value={formData[field.id]}
+                                                onChange={handleChange}
+                                                placeholder={`${field.description}${field.example ? ` (e.g., ${field.example})` : ''}` || field.label}
+                                            />
+                                        ) : (
+                                            <input
+                                                type="text"
+                                                id={field.id}
+                                                name={field.id}
+                                                value={formData[field.id]}
+                                                onChange={handleChange}
+                                                placeholder={`${field.description}${field.example ? ` (e.g., ${field.example})` : ''}` || field.label}
+                                            />
+                                        )}
+                                    </div>
+                                ))}
+
+                                <div style={{ display: 'flex', gap: '1rem' }}>
+                                    <button type="submit" disabled={loading} style={{ flex: 1 }}>
+                                        {loading ? (editingId ? 'Updating...' : 'Submitting...') : (editingId ? 'Update Requirement' : 'Submit Requirement')}
+                                    </button>
+                                    {editingId && (
                                         <button
-                                            className="btn-action"
-                                            onClick={toggleShowAll}
+                                            type="button"
+                                            onClick={handleCancelEdit}
+                                            className="delete-btn"
+                                            style={{ flex: 0.3 }}
                                         >
-                                            {showAll ? 'Show Latest Only' : 'Show All'}
+                                            Cancel
                                         </button>
                                     )}
                                 </div>
-                            </div>
-
-                            {requirements.length > 0 && (
-                                <div style={{ marginBottom: '1rem', display: 'flex', gap: '10px' }}>
-                                    <input
-                                        type="text"
-                                        placeholder="Filter by Field Name..."
-                                        value={targetFieldFilter}
-                                        onChange={(e) => setTargetFieldFilter(e.target.value)}
-                                        style={{
-                                            flex: 1,
-                                            padding: '12px 16px',
-                                            fontSize: '14px'
-                                        }}
-                                    />
-                                    <input
-                                        type="text"
-                                        placeholder="Filter by Data Steward..."
-                                        value={stewardFilter}
-                                        onChange={(e) => setStewardFilter(e.target.value)}
-                                        style={{
-                                            flex: 1,
-                                            padding: '12px 16px',
-                                            fontSize: '14px'
-                                        }}
-                                    />
-                                    <input
-                                        type="text"
-                                        placeholder="Filter by Data Mart..."
-                                        value={datamartFilter}
-                                        onChange={(e) => setDatamartFilter(e.target.value)}
-                                        style={{
-                                            flex: 1,
-                                            padding: '12px 16px',
-                                            fontSize: '14px'
-                                        }}
-                                    />
-                                </div>
-                            )}
+                            </form>
                         </div>
+                    </div>
+                )}
 
-                        {filteredRequirements.length === 0 ? (
-                            <div className="empty-state">
-                                {(stewardFilter || datamartFilter || targetFieldFilter) ? 'No matching requirements found' : 'No requirements submitted yet'}
-                            </div>
-                        ) : (
-                            filteredRequirements.map(req => (
-                                <div
-                                    key={req.id}
-                                    className="requirement-item"
-                                    onClick={() => toggleExpand(req.id)}
-                                    style={{ cursor: 'pointer' }}
-                                >
-                                    <div className="requirement-header">
-                                        <div className="requirement-attribute" title="Target Attribute">
-                                            {req.target_field_name || 'Untitled Field'}
-                                        </div>
-                                        <div className="requirement-datetime">
-                                            Created: {new Date(req.created_at).toLocaleString('en-US', {
-                                                year: 'numeric',
-                                                month: 'short',
-                                                day: 'numeric',
-                                                hour: '2-digit',
-                                                minute: '2-digit',
-                                                hour12: false
-                                            })}
-                                            {req.updated_at && (
-                                                <div style={{ marginTop: '4px' }}>
-                                                    Updated: {new Date(req.updated_at).toLocaleString('en-US', {
-                                                        year: 'numeric',
-                                                        month: 'short',
-                                                        day: 'numeric',
-                                                        hour: '2-digit',
-                                                        minute: '2-digit',
-                                                        hour12: false
-                                                    })}
-                                                </div>
-                                            )}
-                                        </div>
+                <div className="list-section">
+                    {viewMode === 'analytics' ? (
+                        <div className="analytics-container">
+                            <h2 style={{ marginBottom: '1.5rem', marginTop: 0 }}>Analytics Dashboard</h2>
+                            <AnalyticsDashboard requirements={requirements} theme={theme} />
+                        </div>
+                    ) : (
+                        <div className="requirements-list">
+                            <div style={{ marginBottom: '1rem' }}>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                                    <div style={{ display: 'flex', alignItems: 'center' }}>
+                                        <h2 className="requirements-header" style={{ marginBottom: 0, borderBottom: 'none', paddingBottom: 0 }}>
+                                            {(stewardFilter || datamartFilter || showAll) ? 'Submitted Requirements' : 'Latest Submission'}
+                                        </h2>
                                     </div>
-
-                                    <div className="requirement-meta" style={{ marginTop: '0.5rem' }}>
-                                        <div className="meta-info">
-                                            {req.target_datamart && (
-                                                <span className="domain-badge" title="Target Datamart">
-                                                    Data Mart : {req.target_datamart}
-                                                </span>
-                                            )}
-                                            {req.data_owner && (
-                                                <span className="domain-badge" title="Data Owner">
-                                                    Data Owner : {req.data_owner}
-                                                </span>
-                                            )}
-                                            {req.data_steward && (
-                                                <span className="domain-badge" title="Data Steward">
-                                                    Data Steward : {req.data_steward}
-                                                </span>
-                                            )}
-                                        </div>
-                                        <div style={{ display: 'flex', gap: '0.5rem' }}>
+                                    <div style={{ display: 'flex', gap: '0.5rem' }}>
+                                        {requirements.length > 0 && (
                                             <button
                                                 className="btn-action"
-                                                onClick={(e) => {
-                                                    e.stopPropagation()
-                                                    handleEdit(req)
-                                                }}
+                                                onClick={toggleShowAll}
                                             >
-                                                Edit
+                                                {showAll ? 'Show Latest Only' : 'Show All'}
                                             </button>
-                                            <button
-                                                className="delete-btn"
-                                                onClick={(e) => handleDeleteClick(e, req.id)}
-                                            >
-                                                Delete
-                                            </button>
-                                        </div>
+                                        )}
                                     </div>
+                                </div>
 
-                                    {expandedReqId === req.id && (
-                                        <div className="requirement-details" style={{ marginTop: '1.5rem', borderTop: '1px solid var(--border-color)', paddingTop: '1rem' }}>
-                                            <h4 style={{ marginBottom: '1rem', color: 'var(--text-primary)' }}>Full Requirement Details</h4>
-                                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))', gap: '1rem' }}>
-                                                {FIELDS.map(field => {
-                                                    const value = req[field.id]
-                                                    if (!value) return null
-                                                    return (
-                                                        <div key={field.id} style={{ marginBottom: '0.5rem' }}>
-                                                            <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', fontWeight: 600 }}>{field.label}</div>
-                                                            <div style={{ color: 'var(--text-primary)', wordBreak: 'break-word' }}>{value}</div>
-                                                        </div>
-                                                    )
+                                {requirements.length > 0 && (
+                                    <div style={{ marginBottom: '1rem', display: 'flex', gap: '10px' }}>
+                                        <input
+                                            type="text"
+                                            placeholder="Filter by Field Name..."
+                                            value={targetFieldFilter}
+                                            onChange={(e) => setTargetFieldFilter(e.target.value)}
+                                            style={{
+                                                flex: 1,
+                                                padding: '12px 16px',
+                                                fontSize: '14px'
+                                            }}
+                                        />
+                                        <input
+                                            type="text"
+                                            placeholder="Filter by Data Steward..."
+                                            value={stewardFilter}
+                                            onChange={(e) => setStewardFilter(e.target.value)}
+                                            style={{
+                                                flex: 1,
+                                                padding: '12px 16px',
+                                                fontSize: '14px'
+                                            }}
+                                        />
+                                        <input
+                                            type="text"
+                                            placeholder="Filter by Data Mart..."
+                                            value={datamartFilter}
+                                            onChange={(e) => setDatamartFilter(e.target.value)}
+                                            style={{
+                                                flex: 1,
+                                                padding: '12px 16px',
+                                                fontSize: '14px'
+                                            }}
+                                        />
+                                    </div>
+                                )}
+                            </div>
+
+                            {filteredRequirements.length === 0 ? (
+                                <div className="empty-state">
+                                    {(stewardFilter || datamartFilter || targetFieldFilter) ? 'No matching requirements found' : 'No requirements submitted yet'}
+                                </div>
+                            ) : (
+                                filteredRequirements.map(req => (
+                                    <div
+                                        key={req.id}
+                                        className="requirement-item"
+                                        onClick={() => toggleExpand(req.id)}
+                                        style={{ cursor: 'pointer' }}
+                                    >
+                                        <div className="requirement-header">
+                                            <div className="requirement-attribute" title="Target Attribute">
+                                                {req.target_field_name || 'Untitled Field'}
+                                            </div>
+                                            <div className="requirement-datetime">
+                                                Created: {new Date(req.created_at).toLocaleString('en-US', {
+                                                    year: 'numeric',
+                                                    month: 'short',
+                                                    day: 'numeric',
+                                                    hour: '2-digit',
+                                                    minute: '2-digit',
+                                                    hour12: false
                                                 })}
+                                                {req.updated_at && (
+                                                    <div style={{ marginTop: '4px' }}>
+                                                        Updated: {new Date(req.updated_at).toLocaleString('en-US', {
+                                                            year: 'numeric',
+                                                            month: 'short',
+                                                            day: 'numeric',
+                                                            hour: '2-digit',
+                                                            minute: '2-digit',
+                                                            hour12: false
+                                                        })}
+                                                    </div>
+                                                )}
                                             </div>
                                         </div>
-                                    )}
-                                </div>
-                            ))
-                        )}
-                    </div>
+
+                                        <div className="requirement-meta" style={{ marginTop: '0.5rem' }}>
+                                            <div className="meta-info">
+                                                {req.target_datamart && (
+                                                    <span className="domain-badge" title="Target Datamart">
+                                                        Data Mart : {req.target_datamart}
+                                                    </span>
+                                                )}
+                                                {req.data_owner && (
+                                                    <span className="domain-badge" title="Data Owner">
+                                                        Data Owner : {req.data_owner}
+                                                    </span>
+                                                )}
+                                                {req.data_steward && (
+                                                    <span className="domain-badge" title="Data Steward">
+                                                        Data Steward : {req.data_steward}
+                                                    </span>
+                                                )}
+                                            </div>
+                                            <div style={{ display: 'flex', gap: '0.5rem' }}>
+                                                <button
+                                                    className="btn-action"
+                                                    onClick={(e) => {
+                                                        e.stopPropagation()
+                                                        handleEdit(req)
+                                                    }}
+                                                >
+                                                    Edit
+                                                </button>
+                                                <button
+                                                    className="delete-btn"
+                                                    onClick={(e) => handleDeleteClick(e, req.id)}
+                                                >
+                                                    Delete
+                                                </button>
+                                            </div>
+                                        </div>
+
+                                        {expandedReqId === req.id && (
+                                            <div className="requirement-details" style={{ marginTop: '1.5rem', borderTop: '1px solid var(--border-color)', paddingTop: '1rem' }}>
+                                                <h4 style={{ marginBottom: '1rem', color: 'var(--text-primary)' }}>Full Requirement Details</h4>
+                                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))', gap: '1rem' }}>
+                                                    {FIELDS.map(field => {
+                                                        const value = req[field.id]
+                                                        if (!value) return null
+                                                        return (
+                                                            <div key={field.id} style={{ marginBottom: '0.5rem' }}>
+                                                                <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', fontWeight: 600 }}>{field.label}</div>
+                                                                <div style={{ color: 'var(--text-primary)', wordBreak: 'break-word' }}>{value}</div>
+                                                            </div>
+                                                        )
+                                                    })}
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
+                                ))
+                            )}
+                        </div>
+                    )}
                 </div>
             </div>
             {deleteModal.isOpen && (

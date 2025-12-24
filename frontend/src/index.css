@@ -180,6 +180,43 @@ h1 {
   text-align: center;
 }
 
+/* === VIEW TOGGLE === */
+.view-toggle {
+  display: flex;
+  background: var(--bg-glass);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--border-subtle);
+  border-radius: 14px;
+  padding: 5px;
+  gap: 4px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+}
+
+.view-toggle-btn {
+  padding: 8px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  background: transparent;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  letter-spacing: 0.2px;
+}
+
+.view-toggle-btn:hover {
+  color: var(--text-primary);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.view-toggle-btn.active {
+  background: var(--accent-gradient);
+  color: white;
+  box-shadow: 0 4px 12px var(--glow-accent);
+}
+
 /* === THEME TOGGLE === */
 .theme-toggle {
   position: relative;

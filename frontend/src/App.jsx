@@ -75,7 +75,7 @@ export const FIELDS = [
     { id: 'archiving_policy', label: 'Archiving Policy', description: 'Archiving rules for cold storage', example: 'Move to cold storage after 2 years' },
     { id: 'source_retention', label: 'Source Retention', description: 'Retention period in source system', example: 'CRM keeps 5 years of data' },
     { id: 'source_archiving_policy', label: 'Source Archiving Policy', description: 'Archiving rules in source system', example: 'Archived quarterly' },
-    { id: 'data_owner', label: 'Data Owner', description: 'Business owner accountable for meaning of the field', example: 'Finance, Marketing, Risk' },
+    { id: 'data_owner', label: 'Data Owner', type: 'select', options: ['CRM', 'Marketing', 'Onboarding'], description: 'Business owner accountable for meaning of the field', example: 'Finance, Marketing, Risk' },
     { id: 'data_steward', label: 'Data Steward', description: 'Technical owner accountable for correctness & quality', example: 'Data Engineering Team' },
     { id: 'comment_notes', label: 'Comment / Notes', type: 'textarea', description: 'Free-text for exceptions, clarifications, special cases', example: 'Derived differently in APAC region' },
     { id: 'storage', label: 'Storage (format, partitioning)', description: 'Storage requirements (format, partitioning, compression)', example: 'Parquet, partitioned by month' },
@@ -336,6 +336,18 @@ function App() {
                                                 onChange={handleChange}
                                                 placeholder={`${field.description}${field.example ? ` (e.g., ${field.example})` : ''}` || field.label}
                                             />
+                                        ) : field.type === 'select' ? (
+                                            <select
+                                                id={field.id}
+                                                name={field.id}
+                                                value={formData[field.id]}
+                                                onChange={handleChange}
+                                            >
+                                                <option value="">Select {field.label}</option>
+                                                {field.options && field.options.map(opt => (
+                                                    <option key={opt} value={opt}>{opt}</option>
+                                                ))}
+                                            </select>
                                         ) : (
                                             <input
                                                 type="text"

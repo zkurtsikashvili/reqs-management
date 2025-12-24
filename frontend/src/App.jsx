@@ -353,7 +353,7 @@ function App() {
                 <div className="list-section">
                     {viewMode === 'analytics' ? (
                         <div className="analytics-container">
-                            <h2 style={{ marginBottom: '1.5rem', marginTop: 0 }}>Analytics Dashboard</h2>
+                            {/* <h2 style={{ marginBottom: '1.5rem', marginTop: '1rem' }}>Analytics Dashboard</h2> */}
                             <AnalyticsDashboard requirements={requirements} theme={theme} />
                         </div>
                     ) : (

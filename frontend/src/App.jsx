@@ -3,6 +3,89 @@ import AnalyticsDashboard from './AnalyticsDashboard'
 
 const API_URL = 'http://localhost:8000'
 
+const RESPONSIBLE_TEAMS = [
+    'All', 'Business', 'Tech - DE', 'Tech - DM',
+    'Business, Validation - Tech - DM', 'Data Governance (DG)',
+    'Business / Data Engineering', 'Business + Tech'
+]
+
+const TEAM_FIELDS_MAP = {
+    'All': [
+        'target_field_name', 'description', 'target_datamart', 'target_field_type',
+        'primary_key', 'business_key', 'nullable', 'default_value', 'source_field',
+        'source_object_event', 'source_system_topic', 'source_type', 'transformation_rules',
+        'is_derived_value', 'derived_value_logic', 'data_quality_rules',
+        'foreign_key_reference_table', 'foreign_key_reference_field', 'pii_flag',
+        'sensitivity_level', 'security_rule', 'retention_policy', 'archiving_policy',
+        'source_retention', 'source_archiving_policy', 'data_owner', 'data_steward',
+        'comment_notes', 'storage', 'latency_requirements', 'is_renamed',
+        'sla_datamart_level', 'archiving_datamart_level', 'retention_datamart_level'
+    ],
+    'Business': [
+        'target_field_name', 'description', 'primary_key', 'nullable', 'default_value',
+        'source_field', 'source_object_event', 'source_system_topic', 'is_derived_value',
+        'derived_value_logic', 'pii_flag', 'sensitivity_level', 'security_rule',
+        'retention_policy', 'archiving_policy', 'source_retention', 'source_archiving_policy',
+        'data_owner', 'sla_datamart_level', 'archiving_datamart_level', 'retention_datamart_level'
+    ],
+    'Tech - DE': [
+        'target_datamart', 'target_field_type', 'nullable', 'storage', 'latency_requirements'
+    ],
+    'Tech - DM': [
+        'primary_key', 'business_key', 'default_value', 'transformation_rules',
+        'foreign_key_reference_table', 'foreign_key_reference_field', 'is_renamed'
+    ],
+    'Business, Validation - Tech - DM': [
+        'business_key', 'default_value'
+    ],
+    'Data Governance (DG)': [
+        'data_quality_rules'
+    ],
+    'Business / Data Engineering': [
+        'data_steward'
+    ],
+    'Business + Tech': [
+        'latency_requirements', 'sla_datamart_level'
+    ]
+}
+
+export const FIELDS = [
+    { id: 'target_field_name', label: 'Target Field Name', description: 'Final field name in the target model (ODS / DWD / DWS / Mart)', example: 'customer_id, order_date' },
+    { id: 'description', label: 'Description', type: 'textarea', description: 'Business definition in plain English (what the field represents)', example: 'Unique identifier for each customer in CRM' },
+    { id: 'target_datamart', label: 'Target Datamart', description: 'Aggregate sales metrics for reporting', example: 'Sales_DM_v2' },
+    { id: 'target_field_type', label: 'Target Field Type', description: 'Data type in target layer', example: 'STRING, INT, DECIMAL(18,2), DATE' },
+    { id: 'primary_key', label: 'Primary Key (Y/N)', description: 'Yes/No - whether this field is part of the primary key in this layer', example: 'Yes (e.g., customer_id)' },
+    { id: 'business_key', label: 'Business Key (Y/N)', description: 'Yes/No - natural identifier (customer_id, order_id, invoice_no, etc.)', example: 'Yes' },
+    { id: 'nullable', label: 'Nullable (Y/N)', description: 'Yes/No - whether NULL values are allowed', example: 'Yes (e.g., middle_name)' },
+    { id: 'default_value', label: 'Default Value', description: 'Value to assign when NULL occurs', example: '0, N/A, 1970-01-01' },
+    { id: 'source_field', label: 'Source Field', description: 'Original field name in source system', example: 'cust_id' },
+    { id: 'source_object_event', label: 'Source Object / Event', description: 'Source table, API endpoint, event, or Kafka topic', example: 'crm.customer_table, orders_event' },
+    { id: 'source_system_topic', label: 'Source System / Topic', description: 'Name of the source system', example: 'CRM, ERP, Kafka - orders_topic' },
+    { id: 'source_type', label: 'Source Type (Primary/Secondary)', description: 'Primary / Secondary, Internal / External', example: 'Primary, Internal' },
+    { id: 'transformation_rules', label: 'Transformation Rules', type: 'textarea', description: 'Cleansing / standardization / type conversion rules applied', example: 'Trim spaces, uppercase country, convert string to date' },
+    { id: 'is_derived_value', label: 'Is Derived Value (Y/N)', description: 'True/False - whether this field is derived from other fields', example: 'True (if derived)' },
+    { id: 'derived_value_logic', label: 'Derived Value Logic', type: 'textarea', description: 'Formula or logic if derived', example: 'net_revenue = gross_revenue - discounts' },
+    { id: 'data_quality_rules', label: 'Data Quality Rules', type: 'textarea', description: 'Constraints to ensure validity', example: 'Must not be null, must be > 0' },
+    { id: 'foreign_key_reference_table', label: 'Foreign Key Reference Table', description: 'Dimension/fact table joined to', example: 'dim_customer' },
+    { id: 'foreign_key_reference_field', label: 'Foreign Key Reference Field', description: 'Column in the reference table that this maps to', example: 'customer_id' },
+    { id: 'pii_flag', label: 'PII Flag (Y/N)', description: 'Yes/No - does this contain personally identifiable information?', example: 'Yes (email, phone_number)' },
+    { id: 'sensitivity_level', label: 'Sensitivity Level', description: 'Classification of sensitivity', example: 'PII, PCI, Confidential, Internal, Public' },
+    { id: 'security_rule', label: 'Security Rule (mask/hash)', description: 'Masking / hashing / tokenization rule if sensitive', example: 'Mask email, Hash IDs' },
+    { id: 'retention_policy', label: 'Retention Policy', description: 'How long data should be retained in target', example: '7 years' },
+    { id: 'archiving_policy', label: 'Archiving Policy', description: 'Archiving rules for cold storage', example: 'Move to cold storage after 2 years' },
+    { id: 'source_retention', label: 'Source Retention', description: 'Retention period in source system', example: 'CRM keeps 5 years of data' },
+    { id: 'source_archiving_policy', label: 'Source Archiving Policy', description: 'Archiving rules in source system', example: 'Archived quarterly' },
+    { id: 'data_owner', label: 'Data Owner', description: 'Business owner accountable for meaning of the field', example: 'Finance, Marketing, Risk' },
+    { id: 'data_steward', label: 'Data Steward', description: 'Technical owner accountable for correctness & quality', example: 'Data Engineering Team' },
+    { id: 'comment_notes', label: 'Comment / Notes', type: 'textarea', description: 'Free-text for exceptions, clarifications, special cases', example: 'Derived differently in APAC region' },
+    { id: 'storage', label: 'Storage (format, partitioning)', description: 'Storage requirements (format, partitioning, compression)', example: 'Parquet, partitioned by month' },
+    { id: 'latency_requirements', label: 'Latency Requirements', description: 'SLA for freshness (how quickly data should be available)', example: 'Daily (D+1), Real-time (5 min)' },
+    { id: 'is_renamed', label: 'Is Renamed', description: 'True/False - whether the field was renamed in target', example: 'True (cust_id -> customer_id)' },
+    { id: 'sla_datamart_level', label: 'SLA - DataMart level', description: 'Expected SLA for availability in DataMart', example: 'Available daily at 08:00' },
+    { id: 'archiving_datamart_level', label: 'Archiving - DataMart level', description: 'Archiving rules for DataMart layer', example: 'Last 2 years active' },
+    { id: 'retention_datamart_level', label: 'Retention - DataMart level', description: 'Retention rules for DataMart layer', example: '3 years' }
+]
+
 function App() {
     const [requirements, setRequirements] = useState([])
     const [stewardFilter, setStewardFilter] = useState('')
@@ -11,88 +94,7 @@ function App() {
     const [selectedTeam, setSelectedTeam] = useState('All') // New state for selected team
     const [viewMode, setViewMode] = useState('list') // 'list' or 'analytics'
 
-    const RESPONSIBLE_TEAMS = [
-        'All', 'Business', 'Tech - DE', 'Tech - DM',
-        'Business, Validation - Tech - DM', 'Data Governance (DG)',
-        'Business / Data Engineering', 'Business + Tech'
-    ]
 
-    const TEAM_FIELDS_MAP = {
-        'All': [
-            'target_field_name', 'description', 'target_datamart', 'target_field_type',
-            'primary_key', 'business_key', 'nullable', 'default_value', 'source_field',
-            'source_object_event', 'source_system_topic', 'source_type', 'transformation_rules',
-            'is_derived_value', 'derived_value_logic', 'data_quality_rules',
-            'foreign_key_reference_table', 'foreign_key_reference_field', 'pii_flag',
-            'sensitivity_level', 'security_rule', 'retention_policy', 'archiving_policy',
-            'source_retention', 'source_archiving_policy', 'data_owner', 'data_steward',
-            'comment_notes', 'storage', 'latency_requirements', 'is_renamed',
-            'sla_datamart_level', 'archiving_datamart_level', 'retention_datamart_level'
-        ],
-        'Business': [
-            'target_field_name', 'description', 'primary_key', 'nullable', 'default_value',
-            'source_field', 'source_object_event', 'source_system_topic', 'is_derived_value',
-            'derived_value_logic', 'pii_flag', 'sensitivity_level', 'security_rule',
-            'retention_policy', 'archiving_policy', 'source_retention', 'source_archiving_policy',
-            'data_owner', 'sla_datamart_level', 'archiving_datamart_level', 'retention_datamart_level'
-        ],
-        'Tech - DE': [
-            'target_datamart', 'target_field_type', 'nullable', 'storage', 'latency_requirements'
-        ],
-        'Tech - DM': [
-            'primary_key', 'business_key', 'default_value', 'transformation_rules',
-            'foreign_key_reference_table', 'foreign_key_reference_field', 'is_renamed'
-        ],
-        'Business, Validation - Tech - DM': [
-            'business_key', 'default_value'
-        ],
-        'Data Governance (DG)': [
-            'data_quality_rules'
-        ],
-        'Business / Data Engineering': [
-            'data_steward'
-        ],
-        'Business + Tech': [
-            'latency_requirements', 'sla_datamart_level'
-        ]
-    }
-
-    const FIELDS = [
-        { id: 'target_field_name', label: 'Target Field Name', description: 'Final field name in the target model (ODS / DWD / DWS / Mart)', example: 'customer_id, order_date' },
-        { id: 'description', label: 'Description', type: 'textarea', description: 'Business definition in plain English (what the field represents)', example: 'Unique identifier for each customer in CRM' },
-        { id: 'target_datamart', label: 'Target Datamart', description: 'Aggregate sales metrics for reporting', example: 'Sales_DM_v2' },
-        { id: 'target_field_type', label: 'Target Field Type', description: 'Data type in target layer', example: 'STRING, INT, DECIMAL(18,2), DATE' },
-        { id: 'primary_key', label: 'Primary Key (Y/N)', description: 'Yes/No - whether this field is part of the primary key in this layer', example: 'Yes (e.g., customer_id)' },
-        { id: 'business_key', label: 'Business Key (Y/N)', description: 'Yes/No - natural identifier (customer_id, order_id, invoice_no, etc.)', example: 'Yes' },
-        { id: 'nullable', label: 'Nullable (Y/N)', description: 'Yes/No - whether NULL values are allowed', example: 'Yes (e.g., middle_name)' },
-        { id: 'default_value', label: 'Default Value', description: 'Value to assign when NULL occurs', example: '0, N/A, 1970-01-01' },
-        { id: 'source_field', label: 'Source Field', description: 'Original field name in source system', example: 'cust_id' },
-        { id: 'source_object_event', label: 'Source Object / Event', description: 'Source table, API endpoint, event, or Kafka topic', example: 'crm.customer_table, orders_event' },
-        { id: 'source_system_topic', label: 'Source System / Topic', description: 'Name of the source system', example: 'CRM, ERP, Kafka - orders_topic' },
-        { id: 'source_type', label: 'Source Type (Primary/Secondary)', description: 'Primary / Secondary, Internal / External', example: 'Primary, Internal' },
-        { id: 'transformation_rules', label: 'Transformation Rules', type: 'textarea', description: 'Cleansing / standardization / type conversion rules applied', example: 'Trim spaces, uppercase country, convert string to date' },
-        { id: 'is_derived_value', label: 'Is Derived Value (Y/N)', description: 'True/False - whether this field is derived from other fields', example: 'True (if derived)' },
-        { id: 'derived_value_logic', label: 'Derived Value Logic', type: 'textarea', description: 'Formula or logic if derived', example: 'net_revenue = gross_revenue - discounts' },
-        { id: 'data_quality_rules', label: 'Data Quality Rules', type: 'textarea', description: 'Constraints to ensure validity', example: 'Must not be null, must be > 0' },
-        { id: 'foreign_key_reference_table', label: 'Foreign Key Reference Table', description: 'Dimension/fact table joined to', example: 'dim_customer' },
-        { id: 'foreign_key_reference_field', label: 'Foreign Key Reference Field', description: 'Column in the reference table that this maps to', example: 'customer_id' },
-        { id: 'pii_flag', label: 'PII Flag (Y/N)', description: 'Yes/No - does this contain personally identifiable information?', example: 'Yes (email, phone_number)' },
-        { id: 'sensitivity_level', label: 'Sensitivity Level', description: 'Classification of sensitivity', example: 'PII, PCI, Confidential, Internal, Public' },
-        { id: 'security_rule', label: 'Security Rule (mask/hash)', description: 'Masking / hashing / tokenization rule if sensitive', example: 'Mask email, Hash IDs' },
-        { id: 'retention_policy', label: 'Retention Policy', description: 'How long data should be retained in target', example: '7 years' },
-        { id: 'archiving_policy', label: 'Archiving Policy', description: 'Archiving rules for cold storage', example: 'Move to cold storage after 2 years' },
-        { id: 'source_retention', label: 'Source Retention', description: 'Retention period in source system', example: 'CRM keeps 5 years of data' },
-        { id: 'source_archiving_policy', label: 'Source Archiving Policy', description: 'Archiving rules in source system', example: 'Archived quarterly' },
-        { id: 'data_owner', label: 'Data Owner', description: 'Business owner accountable for meaning of the field', example: 'Finance, Marketing, Risk' },
-        { id: 'data_steward', label: 'Data Steward', description: 'Technical owner accountable for correctness & quality', example: 'Data Engineering Team' },
-        { id: 'comment_notes', label: 'Comment / Notes', type: 'textarea', description: 'Free-text for exceptions, clarifications, special cases', example: 'Derived differently in APAC region' },
-        { id: 'storage', label: 'Storage (format, partitioning)', description: 'Storage requirements (format, partitioning, compression)', example: 'Parquet, partitioned by month' },
-        { id: 'latency_requirements', label: 'Latency Requirements', description: 'SLA for freshness (how quickly data should be available)', example: 'Daily (D+1), Real-time (5 min)' },
-        { id: 'is_renamed', label: 'Is Renamed', description: 'True/False - whether the field was renamed in target', example: 'True (cust_id -> customer_id)' },
-        { id: 'sla_datamart_level', label: 'SLA - DataMart level', description: 'Expected SLA for availability in DataMart', example: 'Available daily at 08:00' },
-        { id: 'archiving_datamart_level', label: 'Archiving - DataMart level', description: 'Archiving rules for DataMart layer', example: 'Last 2 years active' },
-        { id: 'retention_datamart_level', label: 'Retention - DataMart level', description: 'Retention rules for DataMart layer', example: '3 years' }
-    ]
 
     const initialFormData = FIELDS.reduce((acc, field) => ({ ...acc, [field.id]: '' }), {})
     const [formData, setFormData] = useState(initialFormData)

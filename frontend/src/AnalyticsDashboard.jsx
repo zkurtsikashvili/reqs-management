@@ -3,6 +3,7 @@ import {
     PieChart, Pie, Cell,
     BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer
 } from 'recharts';
+import { FIELDS } from './App';
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', '#82ca9d', '#ffc658'];
 
@@ -13,6 +14,7 @@ export default function AnalyticsDashboard({ requirements, theme }) {
         const martCounts = {};
         const uniqueStewards = new Set();
         const uniqueOwners = new Set();
+        let incompleteCount = 0;
 
         requirements.forEach(req => {
 
@@ -24,6 +26,10 @@ export default function AnalyticsDashboard({ requirements, theme }) {
 
             if (req.data_steward) uniqueStewards.add(req.data_steward);
             if (req.data_owner) uniqueOwners.add(req.data_owner);
+
+            // Check if incomplete
+            const isIncomplete = FIELDS.some(field => !req[field.id] || req[field.id].toString().trim() === '');
+            if (isIncomplete) incompleteCount++;
         });
 
         const pieData = Object.entries(teamCounts).map(([name, value]) => ({ name, value }));
@@ -33,6 +39,7 @@ export default function AnalyticsDashboard({ requirements, theme }) {
             total: requirements.length,
             stewards: uniqueStewards.size,
             owners: uniqueOwners.size,
+            incomplete: incompleteCount,
             pieData,
             barData
         };
@@ -44,7 +51,7 @@ export default function AnalyticsDashboard({ requirements, theme }) {
 
     const tooltipStyle = theme === 'dark' ? {
         backgroundColor: 'rgba(30, 30, 40, 0.95)',
-        borderColor: 'rgba(255, 255, 255, 0.1)',
+        borderColor: 'rgba(30, 30, 40, 0.95)',
         color: '#fff',
         borderRadius: '8px',
         boxShadow: '0 4px 20px rgba(0,0,0,0.4)',
@@ -69,6 +76,7 @@ export default function AnalyticsDashboard({ requirements, theme }) {
                 <KpiCard title="Total Requirements" value={stats.total} bg={cardBg} />
                 <KpiCard title="Data Stewards" value={stats.stewards} bg={cardBg} />
                 <KpiCard title="Data Owners" value={stats.owners} bg={cardBg} />
+                <KpiCard title="Incomplete" value={stats.incomplete} bg={cardBg} color="#f43f5e" />
             </div>
 
             <div className="charts-grid" style={{
@@ -124,7 +132,7 @@ export default function AnalyticsDashboard({ requirements, theme }) {
     );
 }
 
-function KpiCard({ title, value, bg }) {
+function KpiCard({ title, value, bg, color }) {
     return (
         <div style={{
             background: bg,
@@ -134,7 +142,7 @@ function KpiCard({ title, value, bg }) {
             boxShadow: '0 4px 6px rgba(0,0,0,0.1)'
         }}>
             <h4 style={{ margin: '0 0 0.5rem 0', opacity: 0.8, fontSize: '0.9rem', textTransform: 'uppercase' }}>{title}</h4>
-            <div style={{ fontSize: '2.5rem', fontWeight: 'bold', color: '#646cff' }}>{value}</div>
+            <div style={{ fontSize: '2.5rem', fontWeight: 'bold', color: color || '#646cff' }}>{value}</div>
         </div>
     );
 }
